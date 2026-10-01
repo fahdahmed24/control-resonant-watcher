@@ -1,17 +1,15 @@
-# CONTROL Resonant rental watcher
+# Rental game watcher
 
-This repository checks the CONTROL Resonant card on [Samurai Store](https://samuraistore.site/rental-games) every five minutes. It emails the configured recipient when the card changes to CURRENTLY RENTED or AVAILABLE NOW. Repeated checks of the same status do not send more email.
+This repository checks [Samurai Store's rental games](https://samuraistore.site/rental-games) for **CONTROL Resonant** and **SILENT HILL Townfall** about every five minutes. It emails the configured recipient when either game changes to **AVAILABLE NOW** or **CURRENTLY RENTED**. An unchanged status does not send another email. **UNAVAILABLE** is recorded without an alert.
 
-The starting status was AVAILABLE NOW when checked on October 2, 2026 (Egypt time). The latest known status is recorded in state.json. UNAVAILABLE is recorded but does not trigger an email.
+Each game has its own saved status: `state.json` for CONTROL Resonant and `townfall_state.json` for SILENT HILL Townfall. The checker uses the exact game title and status badge on each rental card. Townfall was AVAILABLE NOW when added on October 2, 2026 (Egypt time).
 
-## Finish email setup
+## Email and runs
 
-In Settings > Secrets and variables > Actions, add a repository secret named GMAIL_APP_PASSWORD. Use a Gmail app password for the account named by GMAIL_USERNAME. Do not use the normal Google password, and do not put the app password in a file or chat. ALERT_TO and GMAIL_USERNAME are already stored as repository secrets.
+The GitHub Actions workflow uses the repository secrets `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`, and `ALERT_TO`. The Gmail password is an app password stored only in GitHub Secrets. The separate **Test rental alert email** workflow sends a clearly labeled test message when run manually.
 
-Gmail app passwords require two-step verification. Create the app password in your Google Account and enter it directly into GitHub Secrets. Then use Actions > Watch CONTROL Resonant > Run workflow to test the checker. A normal check while the status remains available does not send email.
+Open **Actions → Watch CONTROL Resonant and SILENT HILL Townfall** to view checks or run one manually. A check with no status change sends no email.
 
-## Timing and limits
+## Timing
 
-Five minutes is GitHub Actions' shortest schedule interval. GitHub can delay or drop scheduled runs, so an alert is best effort rather than instant. A brief status change between checks may be missed. If the store blocks automated browsers or changes its page structure, a run fails without changing the saved status. Check the Actions run history for failures.
-
-The workflow makes a weekly state update so the public repository continues to have activity. GitHub may disable scheduled workflows in public repositories after 60 days without activity.
+Five minutes is GitHub Actions' shortest schedule interval. GitHub may delay or skip a scheduled run, and a brief change between checks can be missed. If a run fails, check its Actions log. The workflow updates saved timestamps weekly so the public repository remains active.
