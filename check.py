@@ -1,4 +1,4 @@
-"""Email on CONTROL Resonant rental status changes."""
+"""Email when a watched rental game changes status."""
 import json
 import os
 import smtplib
@@ -8,8 +8,8 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 URL = "https://samuraistore.site/rental-games"
-TITLE = "CONTROL Resonant"
-STATE = Path("state.json")
+TITLE = os.environ.get("GAME_TITLE", "CONTROL Resonant")
+STATE = Path(os.environ.get("GAME_STATE", "state.json"))
 
 
 def get_status():
@@ -23,7 +23,7 @@ def get_status():
             )
             card.wait_for(state="visible", timeout=75000)
             if card.count() != 1:
-                raise RuntimeError("Expected exactly one CONTROL Resonant card")
+                raise RuntimeError(f"Expected exactly one {TITLE} card")
             badge = card.locator(".rental-stock-badge")
             if badge.count() != 1:
                 raise RuntimeError("Expected exactly one rental status badge")
@@ -53,7 +53,7 @@ def email_change(old, new):
     message = EmailMessage()
     message["From"] = sender
     message["To"] = recipient
-    message["Subject"] = f"CONTROL Resonant: {new.upper()}"
+    message["Subject"] = f"{TITLE}: {new.upper()}"
     message.set_content(
         f"{TITLE} changed from {old} to {new}." + chr(10) * 2
         + "Rental page: " + URL + chr(10)
