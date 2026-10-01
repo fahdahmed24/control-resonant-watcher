@@ -1,0 +1,29 @@
+name: Test rental alert email
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  send-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send labeled test email
+        env:
+          GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+          message = EmailMessage()
+          message['From'] = os.environ['GMAIL_USERNAME']
+          message['To'] = os.environ['ALERT_TO']
+          message['Subject'] = 'CONTROL Resonant watcher test'
+          message.set_content('This is a test email from the CONTROL Resonant rental watcher. The live status has not changed.')
+          with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30) as smtp:
+              smtp.login(os.environ['GMAIL_USERNAME'], os.environ['GMAIL_APP_PASSWORD'])
+              smtp.send_message(message)
+          print('Test email sent')
+          PY
